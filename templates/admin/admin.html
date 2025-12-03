@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+/* (Your original styles kept, slightly trimmed for brevity) */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;background:#f5f7fa;color:#333;line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:1rem}
+.header{background:#2c3e50;color:#fff;padding:1rem 0;text-align:center;margin-bottom:1.5rem;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);padding:1.5rem;overflow:hidden}
+.card-title{font-size:1.25rem;font-weight:600;margin-bottom:1rem;color:#2c3e50;padding-bottom:.5rem;border-bottom:2px solid #eee}
+.top-controls{display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap}
+.search-container{flex:1;min-width:200px}
+.search-container input{width:100%;padding:.5rem;border:1px solid #ddd;border-radius:4px;font-size:.9rem}
+.btn{padding:.5rem 1rem;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:.9rem}
+.btn:hover{background:#2980b9}
+.table-container{overflow-x:auto;width:100%}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{padding:.75rem;text-align:left;border-bottom:1px solid #eee}
+th{background:#f8f9fa;font-weight:600;color:#2c3e50}
+tbody tr:nth-child(even){background:#f8f9fa}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
+.modal-content{background:#fff;border-radius:8px;width:90%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.modal-header{padding:1.5rem;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:1.25rem;font-weight:600;color:#2c3e50}
+.close-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:1.5rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.form-group{display:flex;flex-direction:column}
+.form-group label{margin-bottom:.25rem;font-weight:500;color:#2c3e50}
+.form-group input, .form-group textarea{padding:.5rem;border:1px solid #ddd;border-radius:4px;font-size:.9rem}
+.modal-footer{padding:1.5rem;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:.5rem}
+@media (max-width:768px){.container{padding:.5rem}.header{padding:.75rem 0;font-size:1.1rem}.card{padding:1rem}.card-title{font-size:1.1rem}.top-controls{flex-direction:column}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="header"><div class="container"><h1>Admin Dashboard</h1></div></header>
+
+<style type="text/css">
+    .a_bt {
+        text-decoration: none;
+        padding: 20px;
+        background: #2c3e50;
+        color: white;
+        border-radius: 6px;
+    }
+    .a_bt:hover {
+        background: #2980b9;
+    }
+</style>
+<main class="container">
+  <div class="main-content">
+    <section class="top-section">
+      <div class="card">
+        <h2 class="card-title">{{ session['admin']}}</h2>
+        <div class="top-controls">
+          
+          <button id="add-event-btn" class="btn">Add Event</button>
+        </div>
+        <div class="table-container">
+          <table id="details-table">
+            <!-- <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead> -->
+            <tbody>
+              <tr>
+                <td><a class="a_bt" href="{{ url_for('admin_page') }}"> Admins</a></td>
+                <td><a class="a_bt" href="{{ url_for('admin_get_users') }}"> Users</a></td>
+                <td><a class="a_bt" href="{{ url_for('admin_add_event') }}"> Events</a></td>
+                <td><a class="a_bt" href="{{ url_for('admin_registrations') }}"> Registrations</a></td>
+                <td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom-section" style="margin-top:1.5rem">
+      <div class="card">
+        <h2 class="card-title">Event Details</h2>
+        <a id="export-btn" class="btn" style="margin-bottom:1rem; text-decoration: none" href="{{ url_for('export_events')}}">Export to CSV</a><br><br>
+        <div class="table-container">
+          <table id="event-details-table">
+            <thead>
+              <tr>
+                <!-- NOW columns are only the requested ones -->
+               
+                <th>Event Name</th>
+                <th>Description</th>
+                <th>Event date</th>
+                <th>Last Date</th>
+                <th>Creator</th>
+                <th>Prize 1</th>
+                <th>Prize 2</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for e in events %}
+              <tr>
+                <td>{{ e.event_name }}</td>
+                <td>{{ e.description }}</td>
+                <td>{{ e.event_date }}</td>
+                <td>{{ e.last_date }}</td>
+                <td>{{ e.creator }}</td>
+                <td>{{ e.prize1 }}</td>
+                <td>{{ e.prize2 }}</td>
+                <td><a href="{{ url_for('admin_delete_event', event_id=e.event_id) }}"><img style="width: 25px; color: red;" src="{{ url_for('static', filename='images/delete-icon.svg')}}"></a></td>
+              </tr>
+            {% endfor %}
+
+            {% if events_outdated %}
+
+                {% for e in events_outdated %}
+                  <tr style="color: red;">
+                    <td>{{ e.event_name }}</td>
+                    <td>{{ e.description }}</td>
+                    <td style="color: red;">{{ e.event_date }}</td>
+                    <td style="color: red;">{{ e.last_date }}</td>
+                    <td>{{ e.creator }}</td>
+                    <td>{{ e.prize1 }}</td>
+                    <td>{{ e.prize2 }}</td>
+                    <i class="fa-light fa-trash-can"></i>
+                    <td><a href="{{ url_for('admin_delete_event', event_id=e.event_id) }}"><img style="width: 25px; color: red;" src="{{ url_for('static', filename='images/delete-icon.svg')}}"></a></td>
+
+                  </tr>
+                {% endfor %}
+
+            {% endif %}
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Add Event Modal (only the requested inputs) -->
+<div id="add-event-modal" class="modal" aria-hidden="true" role="dialog">
+  <div class="modal-content" role="document">
+    <div class="modal-header">
+      <h3 class="modal-title">Add New Event</h3>
+      <button class="close-btn" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="add-event-form" class="form-grid" method="POST" action="{{ url_for('admin_add_event') }}">
+        <!-- EXACT field names you requested -->
+        <div class="form-group" style="grid-column:1 / -1">
+          <label for="eventname">Event Name</label>
+          <input type="text" id="eventname" name="eventname" required>
+        </div>
+
+        <div class="form-group" style="grid-column:1 / -1">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="eventdate">Event Date</label>
+          <input type="date" id="eventdate" name="eventdate" required>
+        </div>
+
+        <div class="form-group">
+          <label for="lastdate">Last Date for Apply</label>
+          <input type="date" id="lastdate" name="lastdate" required>
+        </div>
+
+
+        <div class="form-group">
+          <label for="prize1">First Prize (prize1)</label>
+          <input type="text" id="prize1" name="prize1">
+        </div>
+
+        <div class="form-group">
+          <label for="prize2">Second Prize (prize2)</label>
+          <input type="text" id="prize2" name="prize2">
+        </div>
+
+        <div style="grid-column:1 / -1;display:flex;justify-content:flex-end;gap:.5rem">
+          <button id="cancel-btn" class="btn" type="button" style="background:#95a5a6;">Cancel</button>
+          <button id="submit-btn" class="btn" type="submit">Add Event</button>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+
+    const minDate = `${year}-${month}-${day}`;
+
+    document.getElementById('eventdate').setAttribute('min', minDate);
+    document.getElementById('lastdate').setAttribute('min', minDate);
+});
+</script>
+
+
+<script>
+/* Minimal JS: only modal open/close. DOES NOT prevent form submission. */
+(function () {
+  const addEventBtn = document.getElementById('add-event-btn');
+  const modal = document.getElementById('add-event-modal');
+  const closeBtn = document.querySelector('.close-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const eventname = document.getElementById('eventname');
+
+  if (!modal || !addEventBtn) return;
+
+  addEventBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    if (eventname) eventname.focus();
+  });
+
+  function closeModal() {
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    // let the server handle form submission; do NOT reset here on submit
+    const form = document.getElementById('add-event-form');
+    if (form && form.dataset.resetOnClose === 'true') form.reset();
+  }
+
+  closeBtn && closeBtn.addEventListener('click', closeModal);
+  cancelBtn && cancelBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+  });
+
+  // IMPORTANT: No submit handler here. The form will submit normally to your backend.
+})();
+</script>
+
+</body>
+</html>
+
+
+
+<!-- error message  -->
+<style type="text/css">
+  .message-box {
+    position: fixed;
+    bottom: 100px;      
+    right: 200px;        
+    background: #ff3b3b; 
+    color: #fff;          
+    padding: 12px 18px;
+    border-radius: 10px; 
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 9999;       
+}
+.message-box p {
+    margin: 0;
+}
+</style>
+
+{% if error_msg %}
+<div class="message-box">
+    <p>{{ error_msg }}</p>
+</div>
+
+{% endif  %}
+
+<script>
+if (window.history.replaceState) {
+  // remove POST data so reload won't re-submit the form
+  window.history.replaceState(null, null, window.location.href);
+}
+</script>
+
+<!-- hide after 5 seconds/ -->
+<script>
+setTimeout(() => {
+    const box = document.querySelector('.message-box');
+    if (box) {
+        box.style.transition = "opacity 0.6s ease";
+        box.style.opacity = "0";
+        setTimeout(() => box.remove(), 600);
+    }
+}, 5000); // 5 seconds
+</script>

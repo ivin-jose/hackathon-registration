@@ -1,0 +1,36 @@
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Team Name</th>
+      <th>Email</th>
+      <th>Member 1</th>
+      <th>Member 1 Phone</th>
+      <th>Member 2</th>
+      <th>Member 2 Phone</th>
+      <th>Event Name</th>
+      <th>Event Date</th>
+      <th>Last Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in regs %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ r.team_name }}</td>
+      <td>{{ r.email }}</td>
+
+      <!-- member details from registrations table -->
+      <td>{{ r.member1_name }}</td>
+      <td>{{ r.member1_phone }}</td>
+      <td>{{ r.member2_name }}</td>
+      <td>{{ r.member2_phone }}</td>
+
+      <!-- event details from events table via relationship -->
+      <td>{{ r.event.event_name if r.event else '' }}</td>
+      <td>{{ r.event.event_date if r.event else '' }}</td>
+      <td>{{ r.event.last_date if r.event else '' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OTP Verification</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#00B98E;
+      --bg:#0b0b0b;
+      --card:#fff;
+      --radius:14px;
+      font-family:"Inter",sans-serif;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    body{
+/*      background:var(--bg);*/
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+      color:#fff;
+    }
+
+    .card{
+      background:#ffffffee;
+      color:#000;
+      padding:32px 28px;
+      border-radius:var(--radius);
+      width:100%;
+      max-width:420px;
+      box-shadow:0 20px 40px rgba(0,0,0,0.35);
+      text-align:center;
+    }
+
+    h2{margin-bottom:10px;font-size:22px;font-weight:700}
+
+    .muted{color:#6b6b6b;margin-bottom:20px;font-size:14px}
+
+    .otp-wrap{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      margin-bottom:22px;
+    }
+
+    .otp-input{
+      width:60px;
+      height:60px;
+      text-align:center;
+      font-size:28px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,0.1);
+      outline:none;
+      transition:0.15s;
+    }
+
+    .otp-input:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(0,185,142,0.25);
+    }
+
+    .btn{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      font-weight:700;
+      border:0;
+      background:linear-gradient(90deg,var(--accent),#00e6b0);
+      color:#022;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,185,142,0.25);
+    }
+    .btn:active{transform:translateY(1px)}
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Enter OTP</h2>
+    <p class="muted">OTP sent to email: {{email}}</p>
+
+    <form id="otpForm" method="post">
+      <div class="otp-wrap">
+        <input maxlength="1" class="otp-input" type="text" inputmode="numeric" name='n1'>
+        <input maxlength="1" class="otp-input" type="text" inputmode="numeric" name='n2'>
+        <input maxlength="1" class="otp-input" type="text" inputmode="numeric" name='n3'>
+        <input maxlength="1" class="otp-input" type="text" inputmode="numeric" name='n4'>
+      </div>
+      <button class="btn" type="submit">Verify</button>
+    </form>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll(".otp-input");
+
+    inputs.forEach((input, index) => {
+      input.addEventListener("input", () => {
+        if(input.value.length === 1 && index < inputs.length - 1){
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener("keydown", (e) => {
+        if(e.key === "Backspace" && !input.value && index > 0){
+          inputs[index - 1].focus();
+        }
+      });
+    });
+
+   
+  </script>
+</body>
+</html>
+
+
+
+<!-- error message  -->
+<style type="text/css">
+  .message-box {
+    position: fixed;
+    bottom: 100px;      
+    right: auto;        
+    background: #ff3b3b; 
+    color: #fff;          
+    padding: 12px 18px;
+    border-radius: 10px; 
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 9999;       
+}
+.message-box p {
+    margin: 0;
+}
+</style>
+
+{% if error_msg %}
+<div class="message-box">
+    <p>{{ error_msg }}</p>
+</div>
+
+{% endif  %}
+
+<!-- hide after 5 seconds/ -->
+<script>
+setTimeout(() => {
+    const box = document.querySelector('.message-box');
+    if (box) {
+        box.style.transition = "opacity 0.6s ease";
+        box.style.opacity = "0";
+        setTimeout(() => box.remove(), 600);
+    }
+}, 5000); // 5 seconds
+</script>

@@ -1,0 +1,111 @@
+<style type="text/css">
+  body {
+  font-family: Arial, sans-serif;
+  background: #f3f3f3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background: white;
+  padding: 25px;
+  width: 300px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 10px;
+  background: #2b7cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.login-container button:hover {
+  background: #1d5fd1;
+}
+
+#message {
+  margin-top: 10px;
+  text-align: center;
+  color: red;
+  font-weight: bold;
+}
+
+</style>
+
+<div class="login-container">
+  <h2>Login</h2>
+  <form method="POST" action="{{ url_for('admin_login') }}">
+  <input type="text" id="username" placeholder="Username" name="adminname">
+  <input type="password" id="password" placeholder="Password" name="password">
+  <button type="submit">Login</button>
+</form>
+  <!-- <button onclick="login()">Login</button> -->
+
+  <p id="message"></p>
+</div>
+
+<!-- error message  -->
+<style type="text/css">
+  .message-box {
+    position: fixed;
+    bottom: 100px;      
+    right: 200px;        
+    background: #ff3b3b; 
+    color: #fff;          
+    padding: 12px 18px;
+    border-radius: 10px; 
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 9999;       
+}
+.message-box p {
+    margin: 0;
+}
+</style>
+
+{% if error_msg %}
+<div class="message-box">
+    <p>{{ error_msg }}</p>
+</div>
+
+{% endif  %}
+
+<script>
+if (window.history.replaceState) {
+  // remove POST data so reload won't re-submit the form
+  window.history.replaceState(null, null, window.location.href);
+}
+</script>
+
+<!-- hide after 5 seconds/ -->
+<script>
+setTimeout(() => {
+    const box = document.querySelector('.message-box');
+    if (box) {
+        box.style.transition = "opacity 0.6s ease";
+        box.style.opacity = "0";
+        setTimeout(() => box.remove(), 600);
+    }
+}, 5000); // 5 seconds
+</script>

@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Team Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --accent: #00B98E;
+      --bg: #0b0b0b;
+      --card: #ffffff;
+      --muted: #6b6b6b;
+      --radius: 14px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+
+    /* Center page fully */
+    html,body{
+      height:105%;
+      margin:0;
+      color:var(--card);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:70px;
+    }
+
+    /* main grid */
+    .wrap{
+      width:100%;
+      max-width:1000px;
+      margin:0 auto;
+    }
+
+    /* Left panel */
+    .side{
+      padding:28px;border-radius:var(--radius);
+      background:var(--card);color:#000;
+    }
+    .brand{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+    .logo{
+      width:56px;height:56px;border-radius:12px;
+      display:grid;place-items:center;
+      background: linear-gradient(135deg,var(--accent), #00e6b0);
+      box-shadow: 0 6px 20px rgba(0,185,142,0.16);
+      font-weight:700;color:#032;
+      transition:transform .4s cubic-bezier(.2,.9,.2,1)
+    }
+    .logo:hover{transform:translateY(-6px)}
+    h1{margin:0;font-size:24px}
+    p.lead{margin:8px 0 0;color:#6b6b6b}
+
+    /* form card */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+      color:#071017;
+      padding:22px 110px;
+      border-radius:18px;
+      box-shadow:0 20px 40px rgba(2,8,10,0.4);
+      width:100%;max-width:560px;
+    }
+    form{display:flex;flex-direction:column;gap:12px}
+    label{font-size:13px;font-weight:600}
+    .input{
+      display:block;width:100%;padding:12px 14px;border-radius:10px;
+      border:1px solid rgba(6,10,12,0.06);
+      background:transparent;font-size:15px;outline:none
+    }
+    .input::placeholder{color:rgba(6,10,12,0.35)}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .muted{color:var(--muted);font-size:13px}
+    .small{font-size:12px}
+
+    .btn{
+      margin-top:6px;padding:12px 14px;border-radius:12px;border:0;
+      font-weight:700;cursor:pointer;
+      background:linear-gradient(90deg,var(--accent), #00e6b0);color:#022;
+      box-shadow: 0 8px 20px rgba(0,185,142,0.18), inset 0 -2px 0 rgba(0,0,0,0.04);
+      transition:transform .12s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+
+    .divider{display:flex;align-items:center;gap:12px;margin:6px 0 12px}
+    .divider hr{flex:1;border:0;height:1px;background:linear-gradient(90deg,transparent,#e9ecef44,transparent)}
+
+    .foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+    .ghost{background:transparent;border:1px solid rgba(7,12,14,0.06);padding:8px 12px;border-radius:10px}
+
+    @media (max-width:980px){
+      .wrap{grid-template-columns:1fr;gap:18px}
+      .side{order:2}
+      .card{order:1}
+    }
+
+    .input:focus{
+      box-shadow:0 0 0 4px rgba(0,185,142,0.12);
+      border-color:var(--accent)
+    }
+
+    .error{color:#b00020;font-size:13px;display:none}
+  </style>
+</head>
+<body>
+
+<center>
+  <div class="wrap">
+
+    <main class="card">
+      <h1 style="margin-bottom:6px">Team Registration</h1>
+      <p class="muted" style="margin-top:0;margin-bottom:14px">Enter team and member details to register.</p>
+
+      <form id="teamForm" method="post">
+
+        <div class="field">
+          <label for="teamName">Team name</label>
+          <input id="teamName" name="teamName" class="input" type="text" placeholder="Your team name" required />
+          <span id="teamNameErr" class="error">Please enter a team name.</span>
+        </div>
+
+        <div class="field">
+          <label for="teamName">Event name</label>
+          <input id="teamName" name="eventname" class="input" type="text" value="{{ event_name }}" required readonly />
+          <span id="teamNameErr" class="error">Please enter a team name.</span>
+        </div>
+
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" class="input" type="email" value="{{ session['user_email']}}"  required readonly  />
+          <span id="emailErr" class="error">Please enter a valid email.</span>
+        </div>
+
+        <div class="field">
+          <label for="member1">Member 1 name</label>
+          <input id="member1" name="member1" class="input" type="text" placeholder="Full name" required />
+          <span id="member1Err" class="error">Please enter member 1 name.</span>
+        </div>
+
+        <div class="field">
+          <label for="member1Phone">Member 1 phone</label>
+          <input id="member1Phone" name="member1phone" class="input" type="tel" placeholder="9876543210" pattern="^\d{10}$" required />
+          <span id="member1PhoneErr" class="error">Phone must be exactly 10 digits.</span>
+        </div>
+
+        <div class="field">
+          <label for="member2">Member 2 name</label>
+          <input id="member2" name="member2" class="input" type="text" placeholder="Full name" required />
+          <span id="member2Err" class="error">Please enter member 2 name.</span>
+        </div>
+
+        <div class="field">
+          <label for="member2Phone">Member 2 phone</label>
+          <input id="member2Phone" name="member2phone" class="input" type="tel" placeholder="9876543210" pattern="^\d{10}$" required />
+          <span id="member2PhoneErr" class="error">Phone must be exactly 10 digits.</span>
+        </div>
+
+        <!-- <a href="{{ url_for('team_register_email_verification') }}">Register</a> -->
+        <button type="submit" class="btn">Register</button>
+      </form>
+    </main>
+
+  </div>
+</center>
+<!--   <script>
+    const form = document.getElementById('teamForm');
+
+    const teamName = document.getElementById('teamName');
+    const email = document.getElementById('email');
+    const member1 = document.getElementById('member1');
+    const member1Phone = document.getElementById('member1Phone');
+    const member2 = document.getElementById('member2');
+    const member2Phone = document.getElementById('member2Phone');
+
+    const errors = {
+      teamNameErr: document.getElementById('teamNameErr'),
+      emailErr: document.getElementById('emailErr'),
+      member1Err: document.getElementById('member1Err'),
+      member1PhoneErr: document.getElementById('member1PhoneErr'),
+      member2Err: document.getElementById('member2Err'),
+      member2PhoneErr: document.getElementById('member2PhoneErr'),
+    };
+
+    function validateEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+    function validatePhone(v){ return /^\d{10}$/.test(v); }
+
+    function hideAllErrors(){
+      Object.values(errors).forEach(el=> el.style.display='none');
+    }
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      hideAllErrors();
+      let valid = true;
+
+      if(teamName.value.trim().length < 1){ errors.teamNameErr.style.display='block'; valid = false; }
+      if(!validateEmail(email.value.trim())){ errors.emailErr.style.display='block'; valid = false; }
+      if(member1.value.trim().length < 1){ errors.member1Err.style.display='block'; valid = false; }
+      if(!validatePhone(member1Phone.value.trim())){ errors.member1PhoneErr.style.display='block'; valid = false; }
+      if(member2.value.trim().length < 1){ errors.member2Err.style.display='block'; valid = false; }
+      if(!validatePhone(member2Phone.value.trim())){ errors.member2PhoneErr.style.display='block'; valid = false; }
+
+      if(!valid) return;
+
+      const payload = {
+        teamName: teamName.value.trim(),
+        email: email.value.trim(),
+        members: [
+          { name: member1.value.trim(), phone: member1Phone.value.trim() },
+          { name: member2.value.trim(), phone: member2Phone.value.trim() }
+        ]
+      };
+
+    });
+  </script> -->
+</body>
+</html>
+
+
+<!-- error message  -->
+<style type="text/css">
+  .message-box {
+    position: fixed;
+    bottom: 100px;      
+    right: 200px;        
+    background: #ff3b3b; 
+    color: #fff;          
+    padding: 12px 18px;
+    border-radius: 10px; 
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 9999;       
+}
+.message-box p {
+    margin: 0;
+}
+</style>
+
+{% if error_msg %}
+<div class="message-box">
+    <p>{{ error_msg }}</p>
+</div>
+
+{% endif  %}
+
+<script>
+if (window.history.replaceState) {
+  // remove POST data so reload won't re-submit the form
+  window.history.replaceState(null, null, window.location.href);
+}
+</script>
+
+<!-- hide after 5 seconds/ -->
+<script>
+setTimeout(() => {
+    const box = document.querySelector('.message-box');
+    if (box) {
+        box.style.transition = "opacity 0.6s ease";
+        box.style.opacity = "0";
+        setTimeout(() => box.remove(), 600);
+    }
+}, 5000); // 5 seconds
+</script>
