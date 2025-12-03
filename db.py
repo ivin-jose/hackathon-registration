@@ -3,16 +3,9 @@ import uuid
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
-# Create app and config BEFORE using db
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hackathon.sqlite3'  # file created in cwd
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Keep your style: create SQLAlchemy instance without app, then init_app
+# single global db object – NO app here
 db = SQLAlchemy()
-db.init_app(app)
 
-# ======= models =======
 class Userers(db.Model):
     __tablename__ = 'auth_users'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -62,7 +55,6 @@ class Event(db.Model):
         cols = {c.name: getattr(self, c.name) for c in self.__table__.columns}
         return f"<Event {cols}>"
 
-
 class Admin(db.Model):
     __tablename__ = 'admins'
     admin_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -71,10 +63,3 @@ class Admin(db.Model):
 
     def __repr__(self):
         return f"<Admin {self.admin_id} {self.name}>"
-
-# ======= create tables when running directly =======
-if __name__ == '__main__':
-    # Creates the SQLite file and all tables in the configured path
-    with app.app_context():
-        db.create_all()
-    print("Database and tables created successfully!")
