@@ -1,7 +1,6 @@
 # db.py
 import uuid
 from datetime import datetime
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 # Create app and config BEFORE using db

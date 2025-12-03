@@ -1,7 +1,7 @@
 from flask import Flask, redirect, request, render_template, url_for, session, jsonify, flash, session
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from db import Userers, Event, Registration, Admin
+from db import db, Userers, Event, Registration, Admin
 from sqlalchemy.orm import joinedload
 import smtplib
 import ssl
@@ -13,13 +13,22 @@ import os
 app = Flask(__name__)
 app.secret_key = 'somethingfishy'
 
-# DATABASE and TABLES
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/hackathon.sqlite3'  # Change to your preferred database
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+basedir = os.path.abspath(os.path.dirname(__file__))  # root folder path
+db_path = os.path.join(basedir, "instance", "hackathon.sqlite3")
 
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///" + db_path
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
+# VERY IMPORTANT: use the db from db.py
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 
 
@@ -63,7 +72,7 @@ def page_not_found(e):
 @app.errorhandler(500)
 def page_not_found(e):
     return render_template("errors/500.html"), 500
-    
+
 #-------------------------------------------------------------------------------------------
 
 
