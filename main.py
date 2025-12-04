@@ -14,12 +14,12 @@ def create_admin():
 	admin_password = "admin123"   # plain text for demo only
 	existing = Admin.query.filter_by(name=admin_name).first()
 	if existing:
-        return "Admin already exists."
-
-    new_admin = Admin(name=admin_name, password=admin_password)
-    db.session.add(new_admin)
-    db.session.commit()
-    return "Default admin created."
+		return "Admin already exists."
+	else:
+		new_admin = Admin(name=admin_name, password=admin_password)
+		db.session.add(new_admin)
+		db.session.commit()
+		return "Default admin created."
 
 
 # from flask_mail import Mail, Message
