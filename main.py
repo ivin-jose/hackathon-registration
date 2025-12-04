@@ -162,10 +162,9 @@ def send_otp(user_email):
 #     return otp
 
 
-@app.route('/seed-temp-data')
 def seed_temp_data():
     # 1) Create one user
-    user_email = "demo_user@example.com"
+    user_email = "ivinjose.work@gmail.com"
     user = Userers.query.filter_by(email=user_email).first()
     if not user:
         user = Userers(username="Demo User", email=user_email)
