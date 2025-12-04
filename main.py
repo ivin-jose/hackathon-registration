@@ -472,8 +472,8 @@ def admin_login():
         # find existing admin
         try:
         	admin = Admin.query.filter_by(name=adminname).first()
-        except:
-        	error_msg = "Admin not found"
+        except Exception as e:
+        	error_msg = "Admin not found " + e
         	return render_template('admin/login.html', error_msg=error_msg)
 
         if not admin:
