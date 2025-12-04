@@ -8,6 +8,22 @@ import ssl
 import random
 import os
 
+
+def create_admin():
+	admin_name = "admin"
+	admin_password = "admin123"   # plain text for demo only
+	existing = Admin.query.filter_by(name=admin_name).first()
+	if existing:
+		return "Admin already exists."
+	else:
+		new_admin = Admin(name=admin_name, password=admin_password)
+		db.session.add(new_admin)
+		db.session.commit()
+		return "Default admin created."
+
+
+
+
 # from flask_mail import Mail, Message
 
 app = Flask(__name__)
@@ -29,6 +45,7 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+    create_admin()
 
 
 
@@ -159,6 +176,10 @@ def send_otp(user_email):
 #         server.sendmail(SENDER_EMAIL, user_email, message)
 
 #     return otp
+
+
+
+
 
 #-------------------------------------------------------------------------------------------
 
