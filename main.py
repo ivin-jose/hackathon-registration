@@ -14,8 +14,9 @@ app = Flask(__name__)
 app.secret_key = 'somethingfishy'
 
 
-basedir = os.path.abspath(os.path.dirname(__file__))  # root folder path
-db_path = os.path.join(basedir, "instance", "hackathon.sqlite3")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")  # from Render env
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
     "DATABASE_URL",

@@ -3,5 +3,6 @@ Flask_SQLAlchemy==3.1.1
 SQLAlchemy==2.0.40
 gunicorn==21.2.0
 sendgrid==6.11.0
+psycopg2-binary==2.9.9
 
 

@@ -34,34 +34,131 @@ with app.app_context():
 
 #-------------------------------------------------------------------------------------------
 
-SMTP_SERVER = "smtp.sendgrid.net"
-PORT = 587
-USERNAME = "apikey"
-PASSWORD = os.getenv("SENDGRID_API_KEY_NEW")  # Read from environment
-SENDER_EMAIL = "ivinjose.work@gmail.com"
+import os
+import random
+from flask import session
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+
+
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY_NEW")
+# SENDGRID_API_KEY = SENDGRID_API_KEY_NEW
+
+SENDER_EMAIL = "ivinjose.work@gmail.com"   # must be verified in SendGrid
+
 
 def send_otp(user_email):
+    if not SENDGRID_API_KEY:
+        print("ERROR: SENDGRID_API_KEY_NEW is not set")
+        return None
+
     otp = str(random.randint(1000, 9999))
     session['verification_otp'] = otp
 
     subject = "Your Verification Code"
     body = f"Your OTP is: {otp}"
 
-    message = f"""From: {SENDER_EMAIL}
-To: {user_email}
-Subject: {subject}
+    message = Mail(
+        from_email=SENDER_EMAIL,
+        to_emails=user_email,
+        subject=subject,
+        plain_text_content=body,
+    )
 
-{body}
-"""
+    try:
+        print("=== SENDING OTP VIA SENDGRID API TO:", user_email)
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print("=== OTP SEND STATUS ===", response.status_code)
+        # 202 is SendGrid's "accepted" status
+        if response.status_code == 202:
+            return otp
+        else:
+            return None
+    except Exception as e:
+        print("=== OTP SEND FAILED (API) ===", repr(e))
+        return None
 
-    context = ssl.create_default_context()
 
-    with smtplib.SMTP(SMTP_SERVER, PORT) as server:
-        server.starttls(context=context)
-        server.login(USERNAME, PASSWORD)
-        server.sendmail(SENDER_EMAIL, user_email, message)
 
-    return otp
+# import smtplib
+# import ssl
+# import random
+# from email.message import EmailMessage
+
+# SMTP_SERVER = "smtp.sendgrid.net"
+# PORT = 587
+# USERNAME = "apikey"
+# PASSWORD = os.getenv("SENDGRID_API_KEY_NEW")  # MUST be set in Render env
+# SENDER_EMAIL = "ivinjose.work@gmail.com"      # verified sender in SendGrid
+
+
+# def send_otp(user_email):
+#     # Check env var first
+#     if not PASSWORD:
+#         print("ERROR: SENDGRID_APIKEY_NEW is not set in environment")
+#         return None
+
+#     otp = str(random.randint(1000, 9999))
+#     session['verification_otp'] = otp
+
+#     subject = "Your Verification Code"
+#     body = f"Your OTP is: {otp}"
+
+#     # Build proper email
+#     msg = EmailMessage()
+#     msg["From"] = SENDER_EMAIL
+#     msg["To"] = user_email
+#     msg["Subject"] = subject
+#     msg.set_content(body)
+
+#     context = ssl.create_default_context()
+
+#     try:
+#         print("=== SENDING OTP TO:", user_email)
+#         with smtplib.SMTP(SMTP_SERVER, PORT, timeout=10) as server:  # timeout added
+#             server.ehlo()
+#             server.starttls(context=context)
+#             server.ehlo()
+#             server.login(USERNAME, PASSWORD)
+#             server.send_message(msg)
+#         print("=== OTP SEND SUCCESS ===")
+#         return otp
+#     except Exception as e:
+#         print("=== OTP SEND FAILED ===", repr(e))
+#         return None
+
+
+
+# SMTP_SERVER = "smtp.sendgrid.net"
+# PORT = 587
+# USERNAME = "apikey"
+# PASSWORD = os.getenv("SENDGRID_API_KEY_NEW")  # Read from environment
+# SENDER_EMAIL = "ivinjose.work@gmail.com"
+
+# def send_otp(user_email):
+#     otp = str(random.randint(1000, 9999))
+#     session['verification_otp'] = otp
+
+#     subject = "Your Verification Code"
+#     body = f"Your OTP is: {otp}"
+
+#     message = f"""From: {SENDER_EMAIL}
+# To: {user_email}
+# Subject: {subject}
+
+# {body}
+# """
+
+#     context = ssl.create_default_context()
+
+#     with smtplib.SMTP(SMTP_SERVER, PORT) as server:
+#         server.starttls(context=context)
+#         server.login(USERNAME, PASSWORD)
+#         server.sendmail(SENDER_EMAIL, user_email, message)
+
+#     return otp
 
 #-------------------------------------------------------------------------------------------
 
@@ -215,25 +312,31 @@ def login_verification():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-	error_msg=''
-	
-	if request.method == 'POST':
-		email = request.form.get('email')
+    error_msg = ''
 
-		if not email:
-		    error_msg = "Email required"
-		    return render_template('login.html', error_msg=error_msg)
+    if request.method == 'POST':
+        email = request.form.get('email')
 
+        if not email:
+            error_msg = "Email required"
+            return render_template('login.html', error_msg=error_msg)
 
-		user = Userers.query.filter_by(email=email).first()
-		if user:
-			session['temp_email'] = email
-			send_otp(email)
-			return redirect(url_for('login_verification'))
-		else:
-			error_msg = "Email not Registered..!"
-	
-	return render_template('login.html', error_msg=error_msg)
+        user = Userers.query.filter_by(email=email).first()
+        if user:
+            session['temp_email'] = email
+
+            otp = send_otp(email)
+            if otp is None:
+                # Do NOT redirect, show error
+                error_msg = "Unable to send OTP right now. Please try again later."
+                return render_template('login.html', error_msg=error_msg)
+
+            return redirect(url_for('login_verification'))
+        else:
+            error_msg = "Email not Registered..!"
+
+    return render_template('login.html', error_msg=error_msg)
+
 
 
 #-------------------------------------------------------------------------------------------
@@ -274,6 +377,7 @@ def user_verification():
 				if user:
 					session['user_id'] = user.id
 					session['user_name'] = user.username
+					session['user_email'] = user.email
 
 				session.pop('temp_new_email', None)
 				session.pop('temp_new_name', None)
@@ -353,7 +457,7 @@ def team_register(event_id):
 		member2 = request.form.get('member2')
 		member2phone = request.form.get('member2phone')
 
-		if not team_name or not email or not eventname or not member1 or not member1phone:
+		if not team_name or not eventname or not member1 or not member1phone:
 		    error_msg = "Please fill all required fields"
 		    return render_template("team_register.html", error_msg=error_msg)
 
