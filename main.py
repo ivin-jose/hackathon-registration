@@ -10,26 +10,32 @@ import os
 
 # from flask_mail import Mail, Message
 
+import os
+from flask import Flask
+from db import db   # your db object from db.py
+
 app = Flask(__name__)
 app.secret_key = 'somethingfishy'
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")  # from Render env
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+# 1️⃣ DATABASE CONFIG
+# Use PostgreSQL on Render (DATABASE_URL), otherwise fallback to SQLite locally
+db_path = os.path.join(os.getcwd(), "hackathon.sqlite3")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///" + db_path
+    "DATABASE_URL",                # Render Postgres
+    "sqlite:///" + db_path         # Local SQLite fallback
 )
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
-# VERY IMPORTANT: use the db from db.py
+# 2️⃣ INITIALIZE DB
 db.init_app(app)
 
+# 3️⃣ CREATE TABLES ON START
 with app.app_context():
     db.create_all()
+
 
 
 
