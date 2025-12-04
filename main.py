@@ -377,6 +377,7 @@ def user_verification():
 				if user:
 					session['user_id'] = user.id
 					session['user_name'] = user.username
+					session['user_email'] = user.email
 
 				session.pop('temp_new_email', None)
 				session.pop('temp_new_name', None)
@@ -411,8 +412,8 @@ def user_register():
 			error_msg = "Email Already Registered"
 			return render_template('user_register.html', error_msg=error_msg)
 		else:
-			session['user_email'] = email
-			session['user_name'] = name
+			session['temp_new_email'] = email
+			session['temp_new_name'] = name
 			send_otp(email)
 			return redirect(url_for('user_verification'))
 
@@ -456,7 +457,7 @@ def team_register(event_id):
 		member2 = request.form.get('member2')
 		member2phone = request.form.get('member2phone')
 
-		if not team_name or not email or not eventname or not member1 or not member1phone:
+		if not team_name or not eventname or not member1 or not member1phone:
 		    error_msg = "Please fill all required fields"
 		    return render_template("team_register.html", error_msg=error_msg)
 
