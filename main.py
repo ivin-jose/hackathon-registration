@@ -734,5 +734,23 @@ def export_events():
 
 
 
+#----------------------------------------------------------------------------------------------------
+
+
+@app.route('/admin/create-default')
+def create_default_admin():
+    # change these to what you want
+    admin_name = "admin"
+    admin_password = "admin123"   # plain text for demo only
+
+    existing = Admin.query.filter_by(name=admin_name).first()
+    if existing:
+        return "Admin already exists."
+
+    new_admin = Admin(name=admin_name, password=admin_password)
+    db.session.add(new_admin)
+    db.session.commit()
+    return "Default admin created."
+
 if __name__ == '__main__':
     app.run(ssl_context='adhoc', port=5000)
