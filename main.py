@@ -40,7 +40,11 @@ from flask import session
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+
+
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY_NEW")
+# SENDGRID_API_KEY = SENDGRID_API_KEY_NEW
+
 SENDER_EMAIL = "ivinjose.work@gmail.com"   # must be verified in SendGrid
 
 
@@ -407,8 +411,8 @@ def user_register():
 			error_msg = "Email Already Registered"
 			return render_template('user_register.html', error_msg=error_msg)
 		else:
-			session['temp_new_email'] = email
-			session['temp_new_name'] = name
+			session['user_email'] = email
+			session['user_name'] = name
 			send_otp(email)
 			return redirect(url_for('user_verification'))
 
