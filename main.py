@@ -76,7 +76,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
     create_admin()
-    create_user()
+    create_event()
 
 
 
