@@ -10,29 +10,31 @@ import os
 
 # from flask_mail import Mail, Message
 
-import os
-from flask import Flask
-from db import db   # your db object from db.py
 
 app = Flask(__name__)
 app.secret_key = 'somethingfishy'
 
-# 1️⃣ DATABASE CONFIG
-# Use PostgreSQL on Render (DATABASE_URL), otherwise fallback to SQLite locally
-db_path = os.path.join(os.getcwd(), "hackathon.sqlite3")
+# Build DB URL
+raw_db_url = os.getenv("DATABASE_URL")  # Render Postgres URL (likely starts with postgres://)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL",                # Render Postgres
-    "sqlite:///" + db_path         # Local SQLite fallback
-)
+if raw_db_url:
+    # Ensure SQLAlchemy uses psycopg (psycopg3)
+    if raw_db_url.startswith("postgres://"):
+        raw_db_url = raw_db_url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif raw_db_url.startswith("postgresql://"):
+        raw_db_url = raw_db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = raw_db_url
+else:
+    # Local fallback: SQLite
+    db_path = os.path.join(os.getcwd(), "hackathon.sqlite3")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
-# 2️⃣ INITIALIZE DB
 db.init_app(app)
 
-# 3️⃣ CREATE TABLES ON START
 with app.app_context():
     db.create_all()
 
@@ -862,6 +864,11 @@ def create_default_admin():
     db.session.add(new_admin)
     db.session.commit()
     return "Default admin created."
+
+@app.route("/debug/db")
+def debug_db():
+    return {"db_url": str(db.engine.url)}
+
 
 if __name__ == '__main__':
     app.run(ssl_context='adhoc', port=5000)
