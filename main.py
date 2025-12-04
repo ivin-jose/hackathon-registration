@@ -10,34 +10,26 @@ import os
 
 # from flask_mail import Mail, Message
 
-
 app = Flask(__name__)
 app.secret_key = 'somethingfishy'
 
-# Build DB URL
-raw_db_url = os.getenv("DATABASE_URL")  # Render Postgres URL (likely starts with postgres://)
 
-if raw_db_url:
-    # Ensure SQLAlchemy uses psycopg (psycopg3)
-    if raw_db_url.startswith("postgres://"):
-        raw_db_url = raw_db_url.replace("postgres://", "postgresql+psycopg://", 1)
-    elif raw_db_url.startswith("postgresql://"):
-        raw_db_url = raw_db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+basedir = os.path.abspath(os.path.dirname(__file__))  # root folder path
+db_path = os.path.join(basedir, "instance", "hackathon.sqlite3")
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = raw_db_url
-else:
-    # Local fallback: SQLite
-    db_path = os.path.join(os.getcwd(), "hackathon.sqlite3")
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
-
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///" + db_path
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
+# VERY IMPORTANT: use the db from db.py
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
-
+    seed_temp_data()
 
 
 
@@ -168,6 +160,137 @@ def send_otp(user_email):
 #         server.sendmail(SENDER_EMAIL, user_email, message)
 
 #     return otp
+
+
+@app.route('/seed-temp-data')
+def seed_temp_data():
+    # 1) Create one user
+    user_email = "demo_user@example.com"
+    user = Userers.query.filter_by(email=user_email).first()
+    if not user:
+        user = Userers(username="Demo User", email=user_email)
+        db.session.add(user)
+        db.session.commit()
+        print("Created demo user:", user.id)
+    else:
+        print("Demo user already exists:", user.id)
+
+    # 2) Create one admin
+    admin_name = "admin"
+    admin_password = "admin123"   # plain text for now
+    admin = Admin.query.filter_by(name=admin_name).first()
+    if not admin:
+        admin = Admin(name=admin_name, password=admin_password)
+        db.session.add(admin)
+        db.session.commit()
+        print("Created admin:", admin.admin_id)
+    else:
+        print("Admin already exists:", admin.admin_id)
+
+    # 3) Create 3 events
+    # Use user.id as creator (or None if you want)
+    creator_id = user.id
+
+    existing_events = Event.query.count()
+    if existing_events == 0:
+        e1 = Event(
+            event_name="AI Hackathon 2025",
+            description="Build AI-based solutions in 24 hours.",
+            event_date="15-12-2025",
+            last_date="10-12-2025",
+            event_upload_date=datetime.utcnow().strftime("%d-%m-%Y"),
+            creator=creator_id,
+            prize1="₹10,000",
+            prize2="₹5,000"
+        )
+        e2 = Event(
+            event_name="Web Dev Challenge",
+            description="Create a responsive web app.",
+            event_date="20-12-2025",
+            last_date="15-12-2025",
+            event_upload_date=datetime.utcnow().strftime("%d-%m-%Y"),
+            creator=creator_id,
+            prize1="₹7,000",
+            prize2="₹3,000"
+        )
+        e3 = Event(
+            event_name="Data Science Sprint",
+            description="Solve a data science problem in teams.",
+            event_date="25-12-2025",
+            last_date="20-12-2025",
+            event_upload_date=datetime.utcnow().strftime("%d-%m-%Y"),
+            creator=creator_id,
+            prize1="₹12,000",
+            prize2="₹6,000"
+        )
+
+        db.session.add_all([e1, e2, e3])
+        db.session.commit()
+        print("Created 3 events.")
+    else:
+        print("Events already exist, skipping creation.")
+
+    # refresh events from DB to get IDs
+    events = Event.query.order_by(Event.event_id.asc()).all()
+    if len(events) < 2:
+        return "Not enough events to create registrations", 500
+
+    event1 = events[0]
+    event2 = events[1]
+
+    # 4) Create 2 registrations for the demo user
+    reg_date = datetime.utcnow().strftime("%d-%m-%Y")
+
+    # Registration 1
+    existing_reg1 = Registration.query.filter_by(
+        userid=user.id,
+        event_id=event1.event_id
+    ).first()
+
+    if not existing_reg1:
+        reg1 = Registration(
+            userid=user.id,
+            reg_date=reg_date,
+            event_name="TEAM ALPHA",
+            event_id=event1.event_id,
+            email=user.email,
+            member1_name="Ivin Jose",
+            member1_phone="9999999999",
+            member2_name="Abhay",
+            member2_phone="8888888888"
+        )
+        db.session.add(reg1)
+        print("Created registration 1.")
+    else:
+        print("Registration 1 already exists.")
+
+    # Registration 2
+    existing_reg2 = Registration.query.filter_by(
+        userid=user.id,
+        event_id=event2.event_id
+    ).first()
+
+    if not existing_reg2:
+        reg2 = Registration(
+            userid=user.id,
+            reg_date=reg_date,
+            event_name="TEAM BETA",
+            event_id=event2.event_id,
+            email=user.email,
+            member1_name="John Doe",
+            member1_phone="7777777777",
+            member2_name="Jane Doe",
+            member2_phone="6666666666"
+        )
+        db.session.add(reg2)
+        print("Created registration 2.")
+    else:
+        print("Registration 2 already exists.")
+
+    db.session.commit()
+
+    return "Temp data seeded: 1 user, 1 admin, 3 events, 2 registrations."
+
 
 #-------------------------------------------------------------------------------------------
 
@@ -864,11 +987,6 @@ def create_default_admin():
     db.session.add(new_admin)
     db.session.commit()
     return "Default admin created."
-
-@app.route("/debug/db")
-def debug_db():
-    return {"db_url": str(db.engine.url)}
-
 
 if __name__ == '__main__':
     app.run(ssl_context='adhoc', port=5000)
