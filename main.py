@@ -23,33 +23,33 @@ def create_admin():
 
 
 
-def create_event():
-	error_msg = ''
-	creator_id = 'admin'    
-	eventname = 'Demo Hackathon Event'
-	eventdate = '20-12-2025'
-	lastdate = '18-12-2025'
-	description = 'small description about the demo hackathon.'
-	prize1 = '₹5000'
-	prize2 = '₹2500'
-	reg_date = datetime.utcnow().strftime("%Y-%m-%d")
+# def create_event():
+# 	error_msg = ''
+# 	creator_id = 'admin'    
+# 	eventname = 'Demo Hackathon Event'
+# 	eventdate = '20-12-2025'
+# 	lastdate = '18-12-2025'
+# 	description = 'small description about the demo hackathon.'
+# 	prize1 = '₹5000'
+# 	prize2 = '₹2500'
+# 	reg_date = datetime.utcnow().strftime("%Y-%m-%d")
 
-	try:
-		event3 = Event(
-			event_name=eventname,
-			description=description,
-			event_date=eventdate,
-			last_date=lastdate,
-			event_upload_date=reg_date,
-			creator=creator_id,
-			prize1=prize1,
-			prize2=prize2
-			)
-		db.session.add(event3)
-		db.session.commit()
-		error_msg = "Successfully added..!"
-	except Exception as e:
-		error_msg = "Failed to add..!"
+# 	try:
+# 		event3 = Event(
+# 			event_name=eventname,
+# 			description=description,
+# 			event_date=eventdate,
+# 			last_date=lastdate,
+# 			event_upload_date=reg_date,
+# 			creator=creator_id,
+# 			prize1=prize1,
+# 			prize2=prize2
+# 			)
+# 		db.session.add(event3)
+# 		db.session.commit()
+# 		error_msg = "Successfully added..!"
+# 	except Exception as e:
+# 		error_msg = "Failed to add..!"
 
 
 
@@ -76,7 +76,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
     create_admin()
-    create_event()
+    # create_event()
 
 
 
