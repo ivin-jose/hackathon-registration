@@ -34,22 +34,19 @@ with app.app_context():
 
 #-------------------------------------------------------------------------------------------
 
-import smtplib
-import ssl
+import os
 import random
-from email.message import EmailMessage
+from flask import session
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-SMTP_SERVER = "smtp.sendgrid.net"
-PORT = 587
-USERNAME = "apikey"
-PASSWORD = os.getenv("SENDGRID_API_KEY_NEW")  # MUST be set in Render env
-SENDER_EMAIL = "ivinjose.work@gmail.com"      # verified sender in SendGrid
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY_NEW")
+SENDER_EMAIL = "ivinjose.work@gmail.com"   # must be verified in SendGrid
 
 
 def send_otp(user_email):
-    # Check env var first
-    if not PASSWORD:
-        print("ERROR: SENDGRID_APIKEY_NEW is not set in environment")
+    if not SENDGRID_API_KEY:
+        print("ERROR: SENDGRID_API_KEY_NEW is not set")
         return None
 
     otp = str(random.randint(1000, 9999))
@@ -58,28 +55,75 @@ def send_otp(user_email):
     subject = "Your Verification Code"
     body = f"Your OTP is: {otp}"
 
-    # Build proper email
-    msg = EmailMessage()
-    msg["From"] = SENDER_EMAIL
-    msg["To"] = user_email
-    msg["Subject"] = subject
-    msg.set_content(body)
-
-    context = ssl.create_default_context()
+    message = Mail(
+        from_email=SENDER_EMAIL,
+        to_emails=user_email,
+        subject=subject,
+        plain_text_content=body,
+    )
 
     try:
-        print("=== SENDING OTP TO:", user_email)
-        with smtplib.SMTP(SMTP_SERVER, PORT, timeout=10) as server:  # timeout added
-            server.ehlo()
-            server.starttls(context=context)
-            server.ehlo()
-            server.login(USERNAME, PASSWORD)
-            server.send_message(msg)
-        print("=== OTP SEND SUCCESS ===")
-        return otp
+        print("=== SENDING OTP VIA SENDGRID API TO:", user_email)
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print("=== OTP SEND STATUS ===", response.status_code)
+        # 202 is SendGrid's "accepted" status
+        if response.status_code == 202:
+            return otp
+        else:
+            return None
     except Exception as e:
-        print("=== OTP SEND FAILED ===", repr(e))
+        print("=== OTP SEND FAILED (API) ===", repr(e))
         return None
+
+
+
+# import smtplib
+# import ssl
+# import random
+# from email.message import EmailMessage
+
+# SMTP_SERVER = "smtp.sendgrid.net"
+# PORT = 587
+# USERNAME = "apikey"
+# PASSWORD = os.getenv("SENDGRID_API_KEY_NEW")  # MUST be set in Render env
+# SENDER_EMAIL = "ivinjose.work@gmail.com"      # verified sender in SendGrid
+
+
+# def send_otp(user_email):
+#     # Check env var first
+#     if not PASSWORD:
+#         print("ERROR: SENDGRID_APIKEY_NEW is not set in environment")
+#         return None
+
+#     otp = str(random.randint(1000, 9999))
+#     session['verification_otp'] = otp
+
+#     subject = "Your Verification Code"
+#     body = f"Your OTP is: {otp}"
+
+#     # Build proper email
+#     msg = EmailMessage()
+#     msg["From"] = SENDER_EMAIL
+#     msg["To"] = user_email
+#     msg["Subject"] = subject
+#     msg.set_content(body)
+
+#     context = ssl.create_default_context()
+
+#     try:
+#         print("=== SENDING OTP TO:", user_email)
+#         with smtplib.SMTP(SMTP_SERVER, PORT, timeout=10) as server:  # timeout added
+#             server.ehlo()
+#             server.starttls(context=context)
+#             server.ehlo()
+#             server.login(USERNAME, PASSWORD)
+#             server.send_message(msg)
+#         print("=== OTP SEND SUCCESS ===")
+#         return otp
+#     except Exception as e:
+#         print("=== OTP SEND FAILED ===", repr(e))
+#         return None
 
 
 
